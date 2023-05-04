@@ -1,1 +1,1 @@
-# Frogger-Pygame
+Necessary library: Pygame
