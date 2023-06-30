@@ -1,184 +1,187 @@
-import pygame
-from random import randint
+import pygame as pg
+from pygame import Vector2 as v
 from pygame.locals import *
+from random import choice as c, randint as r
 from sys import exit
 
-pygame.display.set_caption("Frog Test") 
-v = pygame.math.Vector2
-clock = pygame.time.Clock()
-number = 13
-pygame.init()
-FPS = 60
-class windowInfo:
-    def __init__(self):
-        self.Dimension = v(300,600)
-window = windowInfo()
-display = pygame.display.set_mode(window.Dimension)  
-aggregator = 1
+pg.init()
 
-class frogInfo:
+
+class Display:
     def __init__(self):
-        self.Position = v(140,540)
-        self.Dimension = v(20,20)
-        self.Lifes = 3
-        self.Score = 0
-        self.Velocity = self.Dimension.x
+        self.dimension = v(300, 600)
+        self.display = pg.display.set_mode(self.dimension)
+        self.title = pg.display.set_caption("Frog Test")
+
+
+class Frog:
+    def __init__(self):
+        self.position = v(140, 540)
+        self.dimension = v(20, 20)
+        self.velocity = v(self.dimension.x, self.dimension.y)
+        self.lifes = 3
+        self.score = 0
+        self.color = (10, 200, 10)
 
     def move(self):
-        key = pygame.key.get_pressed()
+        if self.lifes > 0:
+            key = pg.key.get_pressed()
+            if key[K_UP]:
+                self.position.y -= self.velocity.y
 
-        if key[K_UP] and self.Lifes > 0:
-            self.Position.y = self.Position.y - self.Velocity
-        if key[K_DOWN] and self.Lifes > 0 and self.Position.y < window.Dimension.y - self.Dimension.x:
-            self.Position.y = self.Position.y + self.Velocity
-        if key[K_LEFT] and self.Lifes > 0 and self.Position.x > 0:
-            self.Position.x = self.Position.x - self.Velocity
-        if key[K_RIGHT] and self.Lifes > 0 and self.Position.x < window.Dimension.x - self.Dimension.x:
-            self.Position.x = self.Position.x + self.Velocity
+            if key[K_DOWN] and self.position.y < DISPLAY.dimension.y - self.dimension.x:
+                self.position.y += self.velocity.y
 
-    def resetPos(self):
-        self.Position = v(140,540)
+            if key[K_LEFT] and self.position.x > 0:
+                self.position.x -= self.velocity.x
+
+            if key[K_RIGHT] and self.position.x < DISPLAY.dimension.x - self.dimension.x:
+                self.position.x += self.velocity.x
+
+    def died(self):
+        self.position = v(140, 540)
+        self.lifes -= 1
+
+    def scored(self) -> bool:
+        if frog.position.y < 0:
+            frog.position.y = 580
+            frog.score += 1
+            return True
+        else:
+            return False
 
     def reset(self):
-        self.Position = v(140,540)
-        self.Dimension = v(20,20)
-        self.Lifes = 3
-        self.Score = 0
-frog = frogInfo()
+        self.position = v(140, 540)
+        self.dimension = v(20, 20)
+        self.lifes = 3
+        self.score = 0
 
-class carInfo:
-    def __init__(self, x, X):
-        self.Position = v(x,0)
-        self.Dimension = v(X,frog.Dimension.y)
 
-cars = list()
-cars.append(carInfo(30,50))  #1
-cars.append(carInfo(130,50)) #1
-cars.append(carInfo(230,50)) #1
+class Car:
+    def __init__(self, x, y, X, vel, direction):
+        self.position = v(x, y)
+        self.dimension = v(X, frog.dimension.y)
+        self.velocity = v(vel, 0)
+        self.color = (200, 10, 10)
+        self.direction = direction
 
-cars.append(carInfo(35,70))  #2
-cars.append(carInfo(185,70)) #2
-
-cars.append(carInfo(20,40))  #3
-cars.append(carInfo(130,40)) #3
-cars.append(carInfo(240,40)) #3
-
-cars.append(carInfo(50,30))  #4
-cars.append(carInfo(130,30)) #4
-cars.append(carInfo(310,30)) #4
-
-cars.append(carInfo(20,80))  #5
-cars.append(carInfo(200,80)) #5
-
-def create_roads():
-    result = list()
-    for count in range(5):
-        randomizer = randint(0,4)
-
-        while randomizer in result and count > 0:
-            randomizer = randint(0,4)
-
-        result.append(randomizer)
-        h = (120, 200, 280, 360, 440)
-        for i in range(number):
-                if randomizer == 0 and -1 < i < 3:
-                    cars[i].Position.y = h[count]
-
-                elif randomizer == 1 and 2 < i < 5:
-                    cars[i].Position.y = h[count]
-
-                elif randomizer == 2 and 4 < i < 8:
-                    cars[i].Position.y = h[count]
-
-                elif randomizer == 3 and 7 < i < 11:
-                    cars[i].Position.y = h[count]
-
-                elif randomizer == 4 and 10 < i < 13:
-                    cars[i].Position.y = h[count]
-create_roads()
-
-def load():
-    display.fill((0,0,0))
-
-    carsHitbox = list()
-    for i in range(number):
-        carsHitbox.append(pygame.draw.rect(display, (200,10,10), (cars[i].Position,cars[i].Dimension))) #cars[0] Hitboxes
-    frogHitbox = pygame.draw.rect(display, (10,200,10), (frog.Position,frog.Dimension)) #frog Hitbox
-
-    for i in range(number):
-        pygame.draw.rect(display, (200,10,10), (cars[i].Position,cars[i].Dimension)) #cars[0] Draw
-    pygame.draw.rect(display, (10,200,10), (frog.Position,frog.Dimension)) #Frog Draw
-
-    global aggregator
-    gv = list()
-    gv.append(1.5*aggregator)
-    gv.append(3.5*aggregator)
-    gv.append(3.0*aggregator)
-    gv.append(2.4*aggregator)
-    gv.append(2.2*aggregator)
-
-    for i in range(number):
-        if i < 3:
-            cars[i].Position.x = cars[i].Position.x - gv[0]
-        elif i < 5:
-            cars[i].Position.x = cars[i].Position.x - gv[1]
-        elif i < 8:
-            cars[i].Position.x = cars[i].Position.x - gv[2]
-        elif i < 11:
-            cars[i].Position.x = cars[i].Position.x - gv[3]
+    def move(self, aggregator):
+        if self.direction:
+            self.position.x -= self.velocity.x * aggregator
+            if self.position.x < -self.dimension.x:
+                self.position.x = DISPLAY.dimension.x
         else:
-            cars[i].Position.x = cars[i].Position.x - gv[4]
+            self.position.x += self.velocity.x * aggregator
+            if self.position.x > DISPLAY.dimension.x:
+                self.position.x = -self.dimension.x
 
-        if cars[i].Position.x < -cars[i].Dimension.x:
-            cars[i].Position.x = window.Dimension.x
-        if cars[i].Position.x < -cars[i].Dimension.x:
-            cars[i].Position.x = window.Dimension.x
 
-    if frog.Position.y < 0:
-            frog.Position.y = 580
-            frog.Score += 1
-            create_roads()
-            if aggregator < 2:
-                aggregator = aggregator + 0.1
+class Game:
+    def __init__(self):
+        self._aggregator = 1
+        self._cars = list()
+        self._cached = list()
+        self._paused = False
+        self._create_roads()
 
-    for i in range(number):
-        if frogHitbox.colliderect(carsHitbox[i]):
-            frog.resetPos()
-            frog.Lifes -= 1
+    def update(self):
+        DISPLAY.display.fill((0, 0, 0))
+        self._show_score()
+        carsHitbox = [pg.draw.rect(DISPLAY.display, car.color,
+                                   (car.position, car.dimension)) for car in self._cars]
+        frogHitbox = pg.draw.rect(DISPLAY.display, frog.color,
+                                  (frog.position, frog.dimension))
 
-    if frog.Lifes == 0:
-        aggregator = 5
+        for car in self._cars:
+            car.move(self._aggregator)
 
-def show_score():
-    Font = pygame.font.get_default_font()
-    Font_sys = pygame.font.SysFont(Font, 30)
-    Game_Over_Font_sys = pygame.font.SysFont(Font, 70)
-    Text_Player_Lifes = Font_sys.render("Lifes: "+str(frog.Lifes),True,(255,240,240))  
-    display.blit(Text_Player_Lifes,(200,5))
-    Text_Player_Points = Font_sys.render("Score: "+str(frog.Score),True,(255,240,240))
-    display.blit(Text_Player_Points,(200,28))
+        if frog.scored():
+            self._create_roads()
+            self._aggregator = self._aggregator + \
+                0.1 if self._aggregator < 2 else self._aggregator
 
-    if frog.Lifes == 0:
-        Text_Game_Over = Game_Over_Font_sys.render("GAME OVER",True,(255,240,240))
-        display.blit(Text_Game_Over,(0,147))
-        Text_Restart = Font_sys.render("Press 'r' for restart",True,(255,240,240))
-        display.blit(Text_Restart,(55,241))
+        for carHitbox in carsHitbox:
+            if frogHitbox.colliderect(carHitbox):
+                frog.died()
 
-while True:
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            exit()
+        self._aggregator = 5 if frog.lifes == 0 else self._aggregator
 
-        if event.type == pygame.KEYDOWN:
-            key = pygame.key.get_pressed()
-            frog.move()
+    def reset(self):
+        self._create_roads()
+        frog.reset()
+        self._aggregator = 1
 
-            if key[K_r]:
-                create_roads()
-                frog.reset()
-                aggregator = 1
-    load()
-    show_score()
-    clock.tick(FPS)
-    pygame.display.update()
+    def pause(self):
+        if not self._paused:
+            for car in self._cars:
+                self._cached.append(car.velocity)
+                car.velocity = v(0, 0)
+            frog.velocity = v(0, 0)
+            self._paused = True
+        else:
+            for i, car in enumerate(self._cars):
+                car.velocity = self._cached[i]
+            frog.velocity = v(frog.dimension.x, frog.dimension.y)
+            self._paused = False
+            self._cached.clear()
+
+    def _create_roads(self):
+        self._cars.clear()
+        for i, h in enumerate((120, 200, 280, 360, 440)):
+            q = r(2, 3)
+            a = r(12, 30)/10
+            x = r(50, 90) if q == 2 else r(40, 60)
+            d = c([True, False])
+            g = r(x+int(x/3), DISPLAY.dimension.x - x * q)
+            for i in range(q):
+                self._cars.append(Car(i*g, h, x, a, d))
+
+    @staticmethod
+    def _show_score():
+        FONT = pg.font.get_default_font()
+        WHITE = (255, 255, 255)
+
+        SysFont = pg.font.SysFont(FONT, 30).render
+        Text_Player_Lifes = SysFont(f"lifes: {frog.lifes}", True, WHITE)
+        Text_Player_Points = SysFont(f"score: {frog.score}", True, WHITE)
+
+        DISPLAY.display.blit(Text_Player_Lifes, (200, 5))
+        DISPLAY.display.blit(Text_Player_Points, (200, 28))
+
+        if frog.lifes == 0:
+            Text_Game_Over = pg.font.SysFont(FONT, 70).render(
+                "GAME OVER", True, WHITE)
+
+            Text_Restart = SysFont(
+                "Press 'r' for restart", True, WHITE)
+
+            DISPLAY.display.blit(Text_Game_Over, (0, 147))
+            DISPLAY.display.blit(Text_Restart, (55, 241))
+
+
+if __name__ == "__main__":
+    clock = pg.time.Clock()
+    DISPLAY = Display()
+    frog = Frog()
+    game = Game()
+    FPS = 60
+
+    while True:
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                exit()
+
+            if event.type == pg.KEYDOWN:
+                key = pg.key.get_pressed()
+                frog.move()
+
+                if key[K_r]:
+                    game.reset()
+
+                if key[K_SPACE]:
+                    game.pause()
+
+        clock.tick(FPS)
+        game.update()
+        pg.display.update()
