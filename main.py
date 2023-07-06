@@ -4,14 +4,11 @@ from random import choice as c, randint as r
 from pygame.locals import *
 from sys import exit
 
-pg.init()
-
 
 class Display:
-    def __init__(self):
-        self.dimension = v(300, 600)
-        self.display = pg.display.set_mode(self.dimension)
-        self.title = pg.display.set_caption("Frog Test")
+    dimension = v(300, 600)
+    display = pg.display.set_mode(dimension)
+    title = pg.display.set_caption("Frog Test")
 
 
 class Frog:
@@ -29,13 +26,13 @@ class Frog:
             if key[K_UP]:
                 self.position.y -= self.velocity.y
 
-            if key[K_DOWN] and self.position.y < DISPLAY.dimension.y - self.dimension.x:
+            if key[K_DOWN] and self.position.y < Display.dimension.y - self.dimension.x:
                 self.position.y += self.velocity.y
 
             if key[K_LEFT] and self.position.x > 0:
                 self.position.x -= self.velocity.x
 
-            if key[K_RIGHT] and self.position.x < DISPLAY.dimension.x - self.dimension.x:
+            if key[K_RIGHT] and self.position.x < Display.dimension.x - self.dimension.x:
                 self.position.x += self.velocity.x
 
     def died(self):
@@ -69,10 +66,10 @@ class Car:
         if self.direction:
             self.position.x -= self.velocity.x * aggregator
             if self.position.x < -self.dimension.x:
-                self.position.x = DISPLAY.dimension.x
+                self.position.x = Display.dimension.x
         else:
             self.position.x += self.velocity.x * aggregator
-            if self.position.x > DISPLAY.dimension.x:
+            if self.position.x > Display.dimension.x:
                 self.position.x = -self.dimension.x
 
 
@@ -86,11 +83,11 @@ class Game:
         self._create_roads()
 
     def update(self):
-        DISPLAY.display.fill((0, 0, 0))
+        Display.display.fill((0, 0, 0))
         self._show_score()
-        carsHitbox = [pg.draw.rect(DISPLAY.display, car.color,
+        carsHitbox = [pg.draw.rect(Display.display, car.color,
                                    (car.position, car.dimension)) for car in self._cars]
-        frogHitbox = pg.draw.rect(DISPLAY.display, self._frog.color,
+        frogHitbox = pg.draw.rect(Display.display, self._frog.color,
                                   (self._frog.position, self._frog.dimension))
 
         for car in self._cars:
@@ -108,6 +105,8 @@ class Game:
 
         self._aggregator = 5 if self._frog.lifes == 0 else self._aggregator
 
+        pg.display.update()
+
     def move(self) -> None:
         for event in pg.event.get():
             if event.type == QUIT:
@@ -119,10 +118,10 @@ class Game:
                 self._frog.move()
 
                 if key[K_r]:
-                    game.reset()
+                    self.reset()
 
                 if key[K_SPACE]:
-                    game.pause()
+                    self.pause()
 
     def reset(self):
         self._create_roads()
@@ -151,7 +150,7 @@ class Game:
             a = r(12, 30)/10
             x = r(50, 90) if q == 2 else r(40, 60)
             d = c([True, False])
-            g = r(x+int(x/3), DISPLAY.dimension.x - x * q)
+            g = r(x+int(x/3), Display.dimension.x - x * q)
             for i in range(q):
                 self._cars.append(Car(i*g, h, x, self._frog.dimension.y, a, d))
 
@@ -163,8 +162,8 @@ class Game:
         Text_Player_Lifes = SysFont(f"lifes: {self._frog.lifes}", True, WHITE)
         Text_Player_Points = SysFont(f"score: {self._frog.score}", True, WHITE)
 
-        DISPLAY.display.blit(Text_Player_Lifes, (200, 5))
-        DISPLAY.display.blit(Text_Player_Points, (200, 28))
+        Display.display.blit(Text_Player_Lifes, (200, 5))
+        Display.display.blit(Text_Player_Points, (200, 28))
 
         if self._frog.lifes == 0:
             Text_Game_Over = pg.font.SysFont(FONT, 70).render(
@@ -173,12 +172,13 @@ class Game:
             Text_Restart = SysFont(
                 "Press 'r' for restart", True, WHITE)
 
-            DISPLAY.display.blit(Text_Game_Over, (0, 147))
-            DISPLAY.display.blit(Text_Restart, (55, 241))
+            Display.display.blit(Text_Game_Over, (0, 147))
+            Display.display.blit(Text_Restart, (55, 241))
 
 
 if __name__ == "__main__":
-    DISPLAY = Display()
+    pg.init()
+
     clock = pg.time.Clock()
     game = Game()
     FPS = 60
@@ -186,4 +186,3 @@ if __name__ == "__main__":
     while True:
         clock.tick(FPS)
         game.update()
-        pg.display.update()
